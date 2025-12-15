@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql-server
+    hostname: mssql
+    restart: always
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    networks:
+      - geo-network
+      
+  geoserver:
+    image: docker.osgeo.org/geoserver:2.26.0
+    container_name: geoserver
+    restart: always
+    environment:
+      - INSTALL_EXTENSIONS=true
+      - STABLE_EXTENSIONS=sqlserver
+      - GEOSERVER_ADMIN_PASSWORD=geoserver
+      - GEOSERVER_ADMIN_USER=admin
+      - CORS_ENABLED=true
+    ports:
+      - "8080:8080"
+    volumes:
+      - geoserver_data:/opt/geoserver_data
+    depends_on:
+      - mssql
+    networks:
+      - geo-network
+
+volumes:
+  mssql_data:
+  geoserver_data:
+
+networks:
+  geo-network:
+    driver: bridge
